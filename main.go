@@ -1,97 +1,96 @@
-package main
+package track_mongo 
 
 import (
-	"fmt"
-	"context"
+	"../uts_course"
 	"log"
+	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"index.go"
+	"fmt"
+	"github.com/fatih/structs"
 )
-type StudentPassedSubject struct {
-	Name string
-	Subject_id string
-	Grade string
-}
-type StudentPlannedSubject struct {
-	Name string
-	Subject_id string
-}
-type StudentSubjects struct {
-	Passed []StudentPassedSubject
-	Planned []StudentPlannedSubject
+
+func Search_subject(course course_retrieve.Course) {
+
 }
 
-type StudentCourse struct {
-	Name string
-	Major string
-	Id string
-}
+func Insert_course(course course_retrieve.Course) {
 
-type Student struct {
-	Name string
-	Email string
-	Student_id string
-	Course StudentCourse
-	Subject StudentSubjects
-}
+	fmt.Println("I am INSERTING")
+	var mongo_url = "mongodb://localhost:27017"
 
-/*
-type Colors struct {
-	Color string
-}
-*/
-
-func main () {
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"));
-
-	fmt.Println("I AM CONNECTING\n");
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongo_url));
 
 	if err != nil {
 		log.Fatal(err);
 	}
 
-	err = client.Ping(context.TODO(), nil);
-	if err != nil {
-		log.Fatal(err);
-	}
+	fmt.Println("Connected to the mongo database ", mongo_url)
 
-	fmt.Println("CONNECTED\n");
+	courses := client.Database("track").Collection("courses");
 
-	collection := client.Database("test").Collection("students");
+	mapped_course := structs.Map(course)
 
+	res, err := courses.InsertOne(context.TODO(), bson.M(mapped_course))
 
-/*
-//HERE COMES INSERT CODE
-	newColor := Colors{"pink"}
-	insertResult, err := collection.InsertOne(context.TODO(), newColor);
-	if err != nil {
-		log.Fatal(err);
-	}
-	fmt.Println("Inserted: ", insertResult.InsertedID);
+	fmt.Println(bson.M(mapped_course))
 
-*/
-
-
-	filter := bson.D{{"name", "Aleksandr Gromov"}};
-
-	//var search Colors;
-	var search Student;
-
-	err = collection.FindOne(context.TODO(), filter).Decode(&search);
-
-	fmt.Printf("Found a single document: %+v\n", search);
-
-
-	filter = bson.D{{"name", "Master of Information Technology"}};
-
-	var courseSearch 
-
+	fmt.Println(res, "\n", err)
 
 	err = client.Disconnect(context.TODO());
 	if err != nil {
 		log.Fatal(err);
 	}
 	fmt.Println("\nDISCONNECTED");
+}
+
+func Insert_subject(subject course_retrieve.Subject) {
+
+}
+
+func Insert_requirements(requirements []course_retrieve.RequirementGroup) {
+
+}
+
+func Get_requirements (course course_retrieve.Course) []course_retrieve.RequirementGroup {
+	return nil
+}
+
+func Search_course (course_id string) course_retrieve.Course {
+
+	fmt.Println("I AM HERE")
+
+	var mongo_url = "mongodb://localhost:27017"
+
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(mongo_url));
+
+	if err != nil {
+		log.Fatal(err);
+	}
+
+	fmt.Println("Connected to the mongo database ", mongo_url)
+
+	courses := client.Database("track").Collection("courses");
+
+
+	//subjects = client.Database("track").Collection("subjects");
+
+	filter := bson.D{{"CourseId", course_id}};
+
+	var search course_retrieve.Course;
+	err = courses.FindOne(context.TODO(), filter).Decode(&search);	
+
+	fmt.Println(search)
+
+	err = client.Disconnect(context.TODO());
+	if err != nil {
+		log.Fatal(err);
+	}
+	fmt.Println("\nDISCONNECTED");
+
+	return search
+
+
+
 }
