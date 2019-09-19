@@ -6,7 +6,7 @@ import (
 	"time"
 	"go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
-    // "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/bson"
 )	
 
 type User struct {
@@ -19,9 +19,13 @@ func main() {
 
 	collection := get_collection(client)
 
-	res := insert_users(User{1, "Dendi"}, collection, ctx)
+	res := insert_users(User{2, "Puppey"}, collection, ctx)
 	
 	fmt.Println(res)
+
+	search_res := find_users("Dendi", collection, ctx)
+
+	fmt.Println(search_res)
 
 	close_connection(client)
 }
@@ -57,16 +61,18 @@ func insert_users(user User, collection mongo.Collection, ctx context.Context) (
 	return *res
 }
 
-// func find_users() {
-// 	var result User
-// 	err = collection.FindOne(ctx, filter).Decode(&result)
+func find_users(search_name string, collection mongo.Collection, ctx context.Context) (User) {
+	var result User
+	var err error
+	filter := bson.D{{"name", search_name}}
+	err = collection.FindOne(ctx, filter).Decode(&result)
 
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
+	if err != nil {
+		fmt.Println(err)
+	}
 
-// 	return result
-// }
+	return result
+}
 
 func close_connection(client mongo.Client) {
 	var err error
