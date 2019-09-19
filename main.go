@@ -10,8 +10,8 @@ import (
 )	
 
 type User struct {
-	user_id int
-	name string
+	User_id int `bson:"userid" json:"userid"`
+	Name string `bson:"name" json:"name"`
 }
 
 func main() {
