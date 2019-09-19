@@ -20,11 +20,10 @@ func main() {
 	collection := get_collection(client)
 
 	res := insert_users(User{2, "Puppey"}, collection, ctx)
-	
-	fmt.Println(res)
 
 	search_res := find_users("Dendi", collection, ctx)
 
+	fmt.Println(res)
 	fmt.Println(search_res)
 
 	close_connection(client)
