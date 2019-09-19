@@ -3,81 +3,95 @@ package main
 import (
 	"fmt"
 	"context"
-	"time"
+	"log"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
-    "go.mongodb.org/mongo-driver/bson"
-)	
-
-type User struct {
-	User_id int `bson:"userid" json:"userid"`
-	Name string `bson:"name" json:"name"`
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"index.go"
+)
+type StudentPassedSubject struct {
+	Name string
+	Subject_id string
+	Grade string
+}
+type StudentPlannedSubject struct {
+	Name string
+	Subject_id string
+}
+type StudentSubjects struct {
+	Passed []StudentPassedSubject
+	Planned []StudentPlannedSubject
 }
 
-func main() {
-	client, ctx := connect_db()
-
-	collection := get_collection(client)
-
-	res := insert_users(User{2, "Puppey"}, collection, ctx)
-
-	search_res := find_users("Dendi", collection, ctx)
-
-	fmt.Println(res)
-	fmt.Println(search_res)
-
-	close_connection(client)
+type StudentCourse struct {
+	Name string
+	Major string
+	Id string
 }
 
-func connect_db() (mongo.Client, context.Context) {
-	var err error
+type Student struct {
+	Name string
+	Email string
+	Student_id string
+	Course StudentCourse
+	Subject StudentSubjects
+}
 
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+/*
+type Colors struct {
+	Color string
+}
+*/
 
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
+func main () {
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"));
+
+	fmt.Println("I AM CONNECTING\n");
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err);
 	}
 
-	return *client, ctx
-}
-
-func get_collection(client mongo.Client) (mongo.Collection) {
-	collection := client.Database("test_project").Collection("Users")
-	return *collection
-}
-
-func insert_users(user User, collection mongo.Collection, ctx context.Context) (mongo.InsertOneResult) {
-	var err error
-	res, err := collection.InsertOne(ctx, user)
-
+	err = client.Ping(context.TODO(), nil);
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err);
 	}
 
-	return *res
-}
+	fmt.Println("CONNECTED\n");
 
-func find_users(search_name string, collection mongo.Collection, ctx context.Context) (User) {
-	var result User
-	var err error
-	filter := bson.D{{"name", search_name}}
-	err = collection.FindOne(ctx, filter).Decode(&result)
+	collection := client.Database("test").Collection("students");
 
+
+/*
+//HERE COMES INSERT CODE
+	newColor := Colors{"pink"}
+	insertResult, err := collection.InsertOne(context.TODO(), newColor);
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err);
 	}
+	fmt.Println("Inserted: ", insertResult.InsertedID);
 
-	return result
-}
+*/
 
-func close_connection(client mongo.Client) {
-	var err error
-	err = client.Disconnect(context.TODO())
 
+	filter := bson.D{{"name", "Aleksandr Gromov"}};
+
+	//var search Colors;
+	var search Student;
+
+	err = collection.FindOne(context.TODO(), filter).Decode(&search);
+
+	fmt.Printf("Found a single document: %+v\n", search);
+
+
+	filter = bson.D{{"name", "Master of Information Technology"}};
+
+	var courseSearch 
+
+
+	err = client.Disconnect(context.TODO());
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err);
 	}
+	fmt.Println("\nDISCONNECTED");
 }
